@@ -6,6 +6,8 @@ from urlparse import urlparse
 import operator
 
 from pyramid.events import subscriber
+from pyramid.security import has_permission
+
 from pyramid_sockjs.session import Session
 from jsonschema import validate
 from jsonpointer import resolve_pointer
@@ -13,7 +15,6 @@ from jsonpointer import resolve_pointer
 from dateutil.tz import tzutc
 from datetime import datetime, timedelta
 
-from annotator import authz
 from h import events, interfaces
 
 import logging
@@ -267,7 +268,7 @@ def after_action(event):
 
     manager = request.get_sockjs_manager()
     for session in manager.active_sessions():
-        if not authz.authorize(annotation, 'read', session.request.user):
+        if not has_permission('read', annotation, session.request):
             continue
 
         if not session.filter.match(annotation, action):
